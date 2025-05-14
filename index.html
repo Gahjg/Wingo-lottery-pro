@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>91 Club Prediction Tool - AI Based</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f9fc;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 16px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            resize: none;
+            font-size: 16px;
+            margin-top: 10px;
+            background-color: #fff;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            font-size: 18px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #219150;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d3436;
+            text-align: center;
+        }
+        .analysis {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #555;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 20px;
+            }
+            textarea, button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>91 Club Game AI Prediction</h1>
+
+    <label>Enter last 20 results (0–9, no spaces or commas):</label>
+    <textarea id="inputData" rows="3" placeholder="e.g., 2973508461..."></textarea>
+
+    <button onclick="predict()">Predict</button>
+
+    <div id="result"></div>
+    <div class="analysis" id="analysis"></div>
+</div>
+
+<script>
+function predict() {
+    let inputField = document.getElementById('inputData');
+    let input = inputField.value.trim();
+
+    if (input.length < 20 || !/^\d+$/.test(input)) {
+        document.getElementById('result').innerText = "Please enter at least 20 digits (0–9).";
+        document.getElementById("analysis").innerHTML = "";
+        return;
+    }
+
+    input = input.slice(-20);
+    let numbers = input.split('').map(Number);
+
+    let lastThree = numbers.slice(-3);
+    let sum = lastThree.reduce((a, b) => a + b, 0);
+    let mod = sum % 10;
+    let prediction = (mod >= 0 && mod <= 4) ? "SMALL" : "BIG";
+    document.getElementById('result').innerText = "Prediction: " + prediction;
+
+    let analysis = [];
+
+    let [a, b, c] = numbers.slice(-3);
+    if (a === b && b === c) {
+        analysis.push("Trap Detected: Repeating same last 3 digits.");
+    }
+
+    let big = numbers.filter(n => n >= 5).length;
+    let small = numbers.filter(n => n <= 4).length;
+    if (Math.abs(big - small) >= 7) {
+        analysis.push("Bias Detected: " + (big > small ? "BIG" : "SMALL") + " is dominating.");
+    }
+
+    let diffs = [];
+    for (let i = 0; i < numbers.length - 1; i++) {
+        diffs.push(numbers[i + 1] - numbers[i]);
+    }
+    if (diffs.every(d => d === diffs[0])) {
+        analysis.push("Shift Pattern Detected: Constant shift of " + diffs[0]);
+    }
+
+    let unique = [...new Set(numbers)];
+    if (unique.length < numbers.length / 2) {
+        analysis.push("Cycle Break Detected: High repeat frequency.");
+    }
+
+    if (analysis.length === 0) {
+        analysis.push("No manipulation patterns detected.");
+    }
+    document.getElementById("analysis").innerHTML = analysis.map(a => "• " + a).join("<br>");
+
+    inputField.value = input.slice(1);
+    inputField.focus();
+}
+</script>
+
+</body>
+</html>
